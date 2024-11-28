@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const bcrypt = require("bcrypt");
+
+// todo: create user model schema
 
 const userSchema = new Schema(
   {
