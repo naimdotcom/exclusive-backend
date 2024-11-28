@@ -6,6 +6,9 @@ const {
   validateBdPhoneNumber,
 } = require("../utils/validationRegex");
 const userModel = require("../Model/user.model");
+const { hashPassword, comparePassword } = require("../Helpers/bcrypt");
+const { generateOTP } = require("../Helpers/otp");
+const { SendMail } = require("../Helpers/nodemailer");
 
 const registration = async (req, res) => {
   try {
@@ -21,11 +24,11 @@ const registration = async (req, res) => {
         .status(400)
         .json(new apiError(400, "invalid email", null, null));
     }
-    if (!validatePassword(password)) {
-      return res
-        .status(400)
-        .json(new apiError(400, "invalid password", null, null));
-    }
+    // if (!validatePassword(password)) {
+    //   return res
+    //     .status(400)
+    //     .json(new apiError(400, "invalid password", null, null));
+    // }
     if (!validateBdPhoneNumber(phoneNumber)) {
       return res
         .status(400)
@@ -38,10 +41,37 @@ const registration = async (req, res) => {
       $or: [{ email: email }, { phoneNumber: phoneNumber }],
     });
 
-    if (user.length > 0) {
+    if (user) {
       return res
         .status(400)
         .json(new apiError(400, "user already exist. ", null, null));
+    }
+
+    /**
+     * todo: generate hash password
+     * @Param {string} password
+     */
+
+    const hashedPassword = await hashPassword(password);
+
+    // todo: generate otp
+
+    const otp = await generateOTP();
+
+    /**
+     * todo: send mail to user for OTP verification
+     * @param {string} firstName
+     * @param {string} Otp
+     * @param {string} email
+     */
+
+    const info = await SendMail(firstName, otp, email);
+
+    if (!info) {
+      // !if mail is not sent, it shouldn't create DB user
+      return res
+        .status(500)
+        .json(new apiError(500, "server error in sending mail", null, null));
     }
 
     // todo: create new user
@@ -51,10 +81,9 @@ const registration = async (req, res) => {
       lastName,
       email,
       phoneNumber,
-      password,
+      password: hashedPassword,
     });
 
-    console.log(req.body);
     res.status(200).json(new apiResponse(200, "success", req.body, null));
   } catch (error) {
     console.log("error from registration controller", error);
