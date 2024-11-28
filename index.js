@@ -1,5 +1,9 @@
 const { app } = require("./app");
+const dotenv = require("dotenv");
 const { connectDB } = require("./src/DB/index");
+const express = require("express");
+
+dotenv.config();
 
 connectDB()
   .then(() => {
