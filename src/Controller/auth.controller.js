@@ -10,9 +10,20 @@ const { hashPassword, comparePassword } = require("../Helpers/bcrypt");
 const { generateOTP } = require("../Helpers/otp");
 const { SendMail } = require("../Helpers/nodemailer");
 
+const DbSelect =
+  "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified";
+
 const registration = async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNumber, password } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      password,
+      address1,
+      address2,
+    } = req.body;
 
     // todo: validation of request
 
@@ -57,15 +68,19 @@ const registration = async (req, res) => {
     // todo: generate otp
 
     const otp = await generateOTP();
+    const expirationTime = new Date().getTime() + 10 * 60 * 1000;
+
+    console.log(otp, expirationTime);
 
     /**
      * todo: send mail to user for OTP verification
      * @param {string} firstName
      * @param {string} Otp
      * @param {string} email
+     * @param {Date} expirationTime
      */
 
-    const info = await SendMail(firstName, otp, email);
+    const info = await SendMail(firstName, otp, email, expirationTime);
 
     if (!info) {
       // !if mail is not sent, it shouldn't create DB user
@@ -78,17 +93,117 @@ const registration = async (req, res) => {
 
     const newUser = await userModel.create({
       firstName,
-      lastName,
+      ...(lastName && { lastName }),
       email,
       phoneNumber,
       password: hashedPassword,
+      ...(address1 && { address1 }),
+      ...(address2 && { address2 }),
     });
 
-    res.status(200).json(new apiResponse(200, "success", req.body, null));
+    /**
+     * todo: update the user db with otp and expiration time
+     * @param {string} otp
+     * @param {Date} expirationTime
+     */
+
+    const updatedUser = await userModel
+      .findOneAndUpdate(
+        {
+          _id: newUser._id,
+        },
+        {
+          otp: otp,
+          otpExpirationTime: expirationTime,
+        },
+        {
+          new: true,
+        }
+      )
+      .select(
+        "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified"
+      );
+
+    res.status(200).json(new apiResponse(200, "success", updatedUser, null));
   } catch (error) {
     console.log("error from registration controller", error);
     res.status(500).json(new apiError(500, "server error", null, error));
   }
 };
 
-module.exports = { registration };
+const verifyTheOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // todo: validation of request
+
+    if (
+      !email ||
+      !otp ||
+      otp == "null" ||
+      otp == "undefined" ||
+      !email == "null" ||
+      !email == "undefined"
+    ) {
+      return res.status(400).json(new apiError(400, "bad request", null, null));
+    }
+
+    // todo: check if user exist
+    const user = await userModel.findOne({ email: email });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(new apiError(400, "user not found", null, null));
+    }
+
+    // todo: check if otp is valid
+    const otpString = Number(otp);
+
+    /**
+     * !database saving the date in YYYY:MM:DD HH:mm:ss format
+     * ! but we are compare it in milliseconds
+     * ! so we need to convert it to milliseconds the otp expiration time then compare it with current time
+     */
+    console.log(
+      user.otpExpirationTime,
+      new Date(user.otpExpirationTime).getTime(),
+      new Date(user.otpExpirationTime).getTime() < new Date().getTime(),
+      new Date().getTime() + 30 * 60 * 1000
+    );
+
+    if (
+      user.otp !== otpString ||
+      new Date(user.otpExpirationTime).getTime() < new Date().getTime()
+    ) {
+      return res
+        .status(400)
+        .json(new apiError(400, "invalid otp or time expired", null, null));
+    }
+
+    // todo: update user
+
+    const updatedUser = await userModel
+      .findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          otp: null,
+          otpExpirationTime: null,
+          isVerified: true,
+        },
+        {
+          new: true,
+        }
+      )
+      .select(DbSelect);
+
+    res.status(200).json(new apiResponse(200, "success", updatedUser, null));
+  } catch (error) {
+    console.log("error from verifyTheOTP controller", error);
+    res.status(500).json(new apiError(500, "server error", null, error));
+  }
+};
+
+module.exports = { registration, verifyTheOTP };

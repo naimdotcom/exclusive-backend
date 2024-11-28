@@ -47,6 +47,10 @@ const userSchema = new Schema(
       type: Number,
       default: null,
     },
+    otpExpirationTime: {
+      type: Date || Number,
+      default: null,
+    },
     image: {
       type: String,
     },
@@ -58,8 +62,6 @@ const userSchema = new Schema(
     timestamps: true,
   }
 );
-
-
 
 const userModel = mongoose.model("user", userSchema);
 
