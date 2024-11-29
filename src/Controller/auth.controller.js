@@ -9,6 +9,7 @@ const userModel = require("../Model/user.model");
 const { hashPassword, comparePassword } = require("../Helpers/bcrypt");
 const { generateOTP } = require("../Helpers/otp");
 const { SendMail } = require("../Helpers/nodemailer");
+const { generateJwtToken } = require("../Helpers/JwtToke");
 
 const DbSelect =
   "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified";
@@ -131,6 +132,70 @@ const registration = async (req, res) => {
   }
 };
 
+// todo: user login
+
+const login = async (req, res) => {
+  try {
+    const { email, password, phoneNumber } = req.body;
+
+    // todo: validation of request
+    if (!email && !phoneNumber) {
+      return res
+        .status(400)
+        .json(new apiError(400, "email or phoneNumber required", null, null));
+    }
+    if (!password) {
+      return res
+        .status(400)
+        .json(new apiError(400, "password required", null, null));
+    }
+
+    // todo: check if user exist
+
+    const user = await userModel.findOne({
+      $or: [{ email: email }, { phoneNumber: phoneNumber }],
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json(new apiError(404, "user not found", null, null));
+    }
+
+    // todo: check if password is correct
+    const isValidPassword = await comparePassword(password, user.password);
+    if (!isValidPassword) {
+      return res
+        .status(401)
+        .json(new apiError(401, "invalid credentials", null, null));
+    }
+
+    // todo: generate token
+    const payload = {
+      _id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+    };
+    /**
+     * todo: generate jwt token
+     * @param {object} payload
+     */
+    const token = await generateJwtToken(payload);
+
+    // todo: send response to user with token
+    res
+      .status(200)
+      .json(new apiResponse(200, "success", { user, token }, null));
+  } catch (error) {
+    console.log("error from login controller", error);
+    res.status(500).json(new apiError(500, "server error", null, error));
+  }
+};
+
+// todo: verify otp
+
 const verifyTheOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -168,8 +233,7 @@ const verifyTheOTP = async (req, res) => {
     console.log(
       user.otpExpirationTime,
       new Date(user.otpExpirationTime).getTime(),
-      new Date(user.otpExpirationTime).getTime() < new Date().getTime(),
-      new Date().getTime() + 30 * 60 * 1000
+      new Date(user.otpExpirationTime).getTime() < new Date().getTime()
     );
 
     if (
