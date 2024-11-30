@@ -10,6 +10,12 @@ const { hashPassword, comparePassword } = require("../Helpers/bcrypt");
 const { generateOTP } = require("../Helpers/otp");
 const { SendMail } = require("../Helpers/nodemailer");
 const { generateJwtToken } = require("../Helpers/JwtToke");
+const {
+  OtpEmailTemplate,
+  logedInEmailTemplate,
+  verifiedEmailTemplate,
+  updateEmailTemplate,
+} = require("../Helpers/emailTemplates");
 
 const DbSelect =
   "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified";
@@ -77,11 +83,14 @@ const registration = async (req, res) => {
      * todo: send mail to user for OTP verification
      * @param {string} firstName
      * @param {string} Otp
-     * @param {string} email
      * @param {Date} expirationTime
      */
 
-    const info = await SendMail(firstName, otp, email, expirationTime);
+    const info = await SendMail(
+      OtpEmailTemplate(firstName, otp, expirationTime),
+      email,
+      "Verification Email  ✔"
+    );
 
     if (!info) {
       // !if mail is not sent, it shouldn't create DB user
@@ -162,6 +171,13 @@ const login = async (req, res) => {
         .json(new apiError(404, "user not found", null, null));
     }
 
+    // todo: check if user is verified
+    if (!user.isVerified) {
+      return res
+        .status(401)
+        .json(new apiError(401, "user not verified", null, null));
+    }
+
     // todo: check if password is correct
     const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
@@ -184,9 +200,18 @@ const login = async (req, res) => {
      */
     const token = await generateJwtToken(payload);
 
+    // todo: send email to user that he's logged in
+
+    const info = await SendMail(
+      logedInEmailTemplate(user.firstName, user.email),
+      user.email,
+      "logged in exlusive 🫶"
+    );
+
     // todo: send response to user with token
     res
       .status(200)
+      .cookie("token", token)
       .json(new apiResponse(200, "success", { user, token }, null));
   } catch (error) {
     console.log("error from login controller", error);
@@ -263,6 +288,20 @@ const verifyTheOTP = async (req, res) => {
       )
       .select(DbSelect);
 
+    if (!updatedUser) {
+      return res
+        .status(400)
+        .json(new apiError(400, "user not found or server error", null, null));
+    }
+
+    // todo: send email to user that he's verified
+
+    const info = await SendMail(
+      verifiedEmailTemplate(updatedUser.firstName),
+      "Your email verified",
+      updatedUser.email
+    );
+
     res.status(200).json(new apiResponse(200, "success", updatedUser, null));
   } catch (error) {
     console.log("error from verifyTheOTP controller", error);
@@ -270,4 +309,71 @@ const verifyTheOTP = async (req, res) => {
   }
 };
 
-module.exports = { registration, verifyTheOTP };
+// todo: homework: update the email. via verification...
+
+const updateEmail = async (req, res) => {
+  try {
+    const { email, updatedEmail, password } = req.body;
+
+    // todo: validation of request
+
+    if (!email || !updatedEmail || !password) {
+      return res.status(400).json(new apiError(400, "bad request", null, null));
+    }
+
+    // todo: check if user exist
+    const user = await userModel.findOne({ email: email });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(new apiError(400, "user not found", null, null));
+    }
+
+    // todo: check if password is correct
+    const isValidPassword = await comparePassword(password, user.password);
+    if (!isValidPassword) {
+      return res
+        .status(401)
+        .json(new apiError(401, "invalid credentials", null, null));
+    }
+
+    // todo: update email
+    const updatedUser = await userModel
+      .findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          email: updatedEmail,
+        },
+        {
+          new: true,
+        }
+      )
+      .select(DbSelect);
+
+    // todo: send email to user that he's verified
+
+    await SendMail(
+      updateEmailTemplate(user.firstName, updatedEmail),
+      user.email,
+      "updated email"
+    );
+
+    await SendMail(
+      updateEmailTemplate(user.firstName, updatedEmail),
+      updatedEmail,
+      "updated email"
+    );
+
+    res.status(200).json(new apiResponse(200, "success", updatedUser, null));
+  } catch (error) {
+    console.log("error from updateEmail controller", error);
+    res.status(500).json(new apiError(500, "server error", null, error));
+  }
+};
+
+// todo: reset password
+
+module.exports = { registration, verifyTheOTP, login, updateEmail };
