@@ -309,6 +309,82 @@ const verifyTheOTP = async (req, res) => {
   }
 };
 
+// todo: resend otp
+const resendTheOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // todo: validation of request
+
+    if (!email) {
+      return res
+        .status(400)
+        .json(new apiError(400, "email is required", null, null));
+    }
+
+    // todo: check if user exist
+    const user = await userModel.findOne({ email: email });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json(new apiError(400, "user not found", null, null));
+    }
+
+    // todo: check if user is time is expired or not
+
+    if (
+      user.otpExpirationTime &&
+      new Date(user.otpExpirationTime).getTime() > new Date().getTime()
+    ) {
+      return res
+        .status(400)
+        .json(new apiError(400, "time not expired", null, null));
+    }
+
+    // todo: generate otp
+    const otp = await generateOTP();
+    const expireTime = new Date(Date.now() + 5 * 60 * 1000);
+
+    // todo: update user
+    const updatedUser = await userModel
+      .findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          otp: otp,
+          otpExpirationTime: expireTime,
+        },
+        {
+          new: true,
+        }
+      )
+      .select(DbSelect);
+
+    if (!updatedUser) {
+      return res
+        .status(400)
+        .json(new apiError(400, "user not found or server error", null, null));
+    }
+
+    // todo: send email to user
+
+    const info = await SendMail(
+      OtpEmailTemplate(user.firstName, otp, expireTime),
+      user.email,
+      "OTP Verification"
+    );
+
+    res
+      .status(200)
+      .json(new apiResponse(200, "success and otp sent", null, null));
+  } catch (error) {
+    console.log("error from resendTheOTP controller", error);
+    res.status(500).json(new apiError(500, "server error", null, error));
+  }
+};
+
 // todo: homework: update the email. via verification...
 
 const updateEmail = async (req, res) => {
@@ -376,4 +452,10 @@ const updateEmail = async (req, res) => {
 
 // todo: reset password
 
-module.exports = { registration, verifyTheOTP, login, updateEmail };
+module.exports = {
+  registration,
+  verifyTheOTP,
+  login,
+  updateEmail,
+  resendTheOTP,
+};
