@@ -1,3 +1,15 @@
+/**
+ * OtpEmailTemplate
+ *
+ * @description
+ * This function generates an html template for an email that is sent to the user when they request an OTP for verification.
+ *
+ * @param {string} firstName - The first name of the user.
+ * @param {number} Otp - The OTP code for verification.
+ * @param {number} expirationTime - The number of milliseconds until the OTP expires.
+ *
+ * @returns {string} - An html template for an email that is sent to the user.
+ */
 const OtpEmailTemplate = (firstName, Otp, expirationTime) => {
   const formattedTime = new Date(expirationTime).toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -37,6 +49,16 @@ const logedInEmailTemplate = (firstName) => {
     `;
 };
 
+/**
+ * verifiedEmailTemplate
+ *
+ * @description
+ * This is a function that generates an html template for an email that is sent to the user when they have successfully verified their email.
+ *
+ * @param {string} firstName - The first name of the user.
+ *
+ * @returns {string} - An html template for an email that is sent to the user.
+ */
 const verifiedEmailTemplate = (firstName) => {
   return `
      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -51,6 +73,17 @@ const verifiedEmailTemplate = (firstName) => {
     `;
 };
 
+/**
+ * updateEmailTemplate
+ *
+ * @description
+ * This is a function that generates an html template for an email that is sent to the user when they have successfully updated their email.
+ *
+ * @param {string} firstName - The first name of the user.
+ * @param {string} newEmail - The new email address of the user.
+ *
+ * @returns {string} - An html template for an email that is sent to the user.
+ */
 const updateEmailTemplate = (firstName, newEmail) => {
   return `
      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
