@@ -28,4 +28,19 @@ const uploadImage = async (file) => {
   }
 };
 
-module.exports = { uploadImage };
+const deleteImage = async (public_id) => {
+  try {
+    if (!public_id) {
+      console.log("public id not found");
+      return;
+    }
+    return await cloudinary.api.delete_resources([public_id], {
+      resource_type: "image",
+      type: "upload",
+    });
+  } catch (error) {
+    console.log("error from cloudinary delete image:" + error);
+  }
+};
+
+module.exports = { uploadImage, deleteImage };
