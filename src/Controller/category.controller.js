@@ -130,6 +130,7 @@ const getCategoryById = async (req, res) => {
     res.status(400).json(new apiError(400, "bad request", null, null));
   }
 };
+
 module.exports = {
   createCategory,
   getAllCategory,
