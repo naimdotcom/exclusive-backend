@@ -38,18 +38,20 @@ const productSchema = new Schema(
       type: String,
       require: true,
     },
-    size: {
-      type: String,
-      default: "S",
-      enum: ["XS", "S", "L", "M", "Xl", "XXL"],
-    },
+    size: [
+      {
+        type: String,
+        default: "S",
+        enum: ["XS", "S", "L", "M", "XL", "XXL"],
+      },
+    ],
     color: {
       type: String,
       required: true,
       trim: true,
     },
 
-    image: [
+    images: [
       {
         type: String,
         required: true,
