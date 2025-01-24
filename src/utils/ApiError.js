@@ -4,7 +4,7 @@ class apiError {
    * @param {number} statusCode - The HTTP status code of the error.
    * @param {string} message - A descriptive message of the error.
    */
-  constructor(statusCode, message, data, error) {
+  constructor(statusCode, message, data = null, error = null) {
     // Assign the status code to the instance
     this.statusCode = statusCode;
     // Assign the error message to the instance

@@ -3,7 +3,7 @@ const _ = express.Router();
 const authRoutes = require("./api/auth.routes.js");
 const categoryRoutes = require("./api/category.routes.js");
 const productRoutes = require("./api/product.routes.js");
-
+const subCategoryRoutes = require("./api/subCategory.routes.js");
 _.use("/auth", authRoutes);
 _.use("/category", categoryRoutes);
 _.use("/product", productRoutes);
@@ -12,5 +12,6 @@ _.get("/health", (req, res) => {
     data: "health api",
   });
 });
+_.use("subcategory", subCategoryRoutes);
 
 module.exports = _;
