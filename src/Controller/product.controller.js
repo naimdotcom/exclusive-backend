@@ -5,7 +5,16 @@ const { uploadImage, deleteImage } = require("../utils/cloudinary.js");
 
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, rating, size, color } = req.body;
+    const {
+      name,
+      description,
+      price,
+      rating,
+      size,
+      color,
+      category,
+      subcategory,
+    } = req.body;
 
     if (
       !name ||
@@ -13,7 +22,9 @@ const createProduct = async (req, res) => {
       !price ||
       !rating ||
       !(size.length > 0) ||
-      !color
+      !color ||
+      !subcategory ||
+      !category
     ) {
       return res
         .status(400)

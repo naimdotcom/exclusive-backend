@@ -50,6 +50,14 @@ const productSchema = new Schema(
       required: true,
       trim: true,
     },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "category",
+    },
+    subcategory: {
+      type: Schema.Types.ObjectId,
+      ref: "subCategory",
+    },
 
     images: [
       {
