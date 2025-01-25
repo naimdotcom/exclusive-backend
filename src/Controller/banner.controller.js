@@ -40,9 +40,25 @@ const createBanner = async (req, res) => {
   }
 };
 
+const getBanner = async (req, res) => {
+  try {
+    const banner = await Banner.find();
+    if (banner.length === 0 || !banner) {
+      return res.status(500).json(new apiError(500, "internal error"));
+    }
+    return res.status(200).json(new apiResponse(200, banner));
+  } catch (error) {
+    console.log("error while getting banner ", error);
+    res
+      .status(500)
+      .json(new apiError(500, "something went wrong while getting banner"));
+  }
+};
+
 const updateBanner = async (req, res) => {
   try {
     const { title } = req.body;
+    const { id } = req.params;
     const image = req.files?.image?.[0];
     if (!title && !image) {
       return res.status(406).json(new apiError(406, "title and image missing"));
@@ -58,7 +74,20 @@ const updateBanner = async (req, res) => {
       };
     }
 
-    const bannerUpdated = await Banner.findByIdAndUpdate();
+    const bannerUpdated = await Banner.findByIdAndUpdate(
+      { _id: id },
+      { ...info },
+      { new: true }
+    );
+    if (!bannerUpdated) {
+      return res
+        .status(501)
+        .json(new apiError(501, "banner not updated, internal error"));
+    }
+
+    return res
+      .status(200)
+      .json(new apiResponse(200, "banner updated", bannerUpdated));
   } catch (error) {
     console.log("error while creating banner ", error);
     res
@@ -67,4 +96,4 @@ const updateBanner = async (req, res) => {
   }
 };
 
-module.exports = { createBanner, updateBanner };
+module.exports = { createBanner, updateBanner, getBanner };

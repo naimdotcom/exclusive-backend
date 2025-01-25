@@ -1,12 +1,19 @@
 const express = require("express");
 const _ = express.Router();
 const { upload } = require("../../middleware/multer.middleware");
-const { createBanner } = require("../../Controller/banner.controller");
+const {
+  createBanner,
+  updateBanner,
+  getBanner,
+} = require("../../Controller/banner.controller");
 
-_.route("/").post(
+_.route("/")
+  .post(upload.fields([{ name: "image", maxCount: 1 }]), createBanner)
+  .get(getBanner);
+
+_.route("/:id").put(
   upload.fields([{ name: "image", maxCount: 1 }]),
-  createBanner
+  updateBanner
 );
-_.route("/:id").put(upload.fields([{ name: "image", maxCount: 1 }]));
 
 module.exports = _;
