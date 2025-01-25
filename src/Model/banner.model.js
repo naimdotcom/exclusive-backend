@@ -13,6 +13,11 @@ const bannerSchema = new Schema({
     require: true,
     trim: true,
   },
+  urlPath: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 });
 
 const Banner = mongoose.model("banner", bannerSchema);
