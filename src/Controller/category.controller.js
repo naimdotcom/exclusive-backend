@@ -114,6 +114,7 @@ const getCategoryById = async (req, res) => {
 
     const category = await categoryModel
       .findById(id)
+
       .select("-__v -createdAt -updatedAt");
 
     if (!category) {

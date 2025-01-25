@@ -19,7 +19,6 @@ const productSchema = new Schema(
     },
     rating: {
       type: Number,
-      required: true,
       default: 0,
     },
     review: [
@@ -53,12 +52,12 @@ const productSchema = new Schema(
     category: {
       type: Schema.Types.ObjectId,
       ref: "category",
+      require: true,
     },
     subcategory: {
       type: Schema.Types.ObjectId,
       ref: "subCategory",
     },
-
     images: [
       {
         type: String,

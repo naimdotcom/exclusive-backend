@@ -2,6 +2,8 @@ const Product = require("../Model/product.model.js");
 const apiError = require("../utils/ApiError.js");
 const apiResponse = require("../utils/ApiResponse.js");
 const { uploadImage, deleteImage } = require("../utils/cloudinary.js");
+const subCategoryModel = require("../Model/subCategory.model.js");
+const categoryModel = require("../Model/category.model.js");
 
 const createProduct = async (req, res) => {
   try {
@@ -13,6 +15,8 @@ const createProduct = async (req, res) => {
       size,
       color,
       category,
+      categoryId,
+      subcategoryId,
       subcategory,
     } = req.body;
 
@@ -23,8 +27,8 @@ const createProduct = async (req, res) => {
       !rating ||
       !(size.length > 0) ||
       !color ||
-      !subcategory ||
-      !category
+      (!subcategory && !subcategoryId) ||
+      (!category && !categoryId)
     ) {
       return res
         .status(400)
@@ -45,6 +49,21 @@ const createProduct = async (req, res) => {
         .status(400)
         .json(
           new apiError(400, "bad request - product already exists", null, null)
+        );
+    }
+
+    const isCategoryExist = await categoryModel.find({
+      $or: [{ name: category }, { _id: categoryId }],
+    });
+    const isSubcategoryExist = await subCategoryModel.find({
+      $or: [{ _id: subcategoryId }, { name: subcategory }],
+    });
+
+    if (!isCategoryExist) {
+      res
+        .status(400)
+        .json(
+          new apiError(400, "category does not exist or something went wrong")
         );
     }
 
@@ -71,7 +90,15 @@ const createProduct = async (req, res) => {
       size: size,
       color: color,
       images: [...cloudinaryUrls],
+      category: isCategoryExist[0]?.id,
+      ...(isSubcategoryExist[0] && { subcategory: isCategoryExist[0].id }),
     });
+    isCategoryExist[0].products.push(savedProduct.id);
+    if (isSubcategoryExist.length > 0) {
+      isSubcategoryExist[0].products.push(savedProduct.id);
+    }
+
+    await isCategoryExist[0].save();
 
     if (!savedProduct) {
       return res

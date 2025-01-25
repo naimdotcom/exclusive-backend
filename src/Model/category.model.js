@@ -17,6 +17,7 @@ const categorySchema = new Schema(
         ref: "subCategory",
       },
     ],
+    products: [{ type: Schema.Types.ObjectId, ref: "product" }],
   },
   { timestamps: true }
 );

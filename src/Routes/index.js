@@ -7,11 +7,11 @@ const subCategoryRoutes = require("./api/subCategory.routes.js");
 _.use("/auth", authRoutes);
 _.use("/category", categoryRoutes);
 _.use("/product", productRoutes);
+_.use("/subcategory", subCategoryRoutes);
 _.get("/health", (req, res) => {
   res.status(200).json({
     data: "health api",
   });
 });
-_.use("subcategory", subCategoryRoutes);
 
 module.exports = _;
