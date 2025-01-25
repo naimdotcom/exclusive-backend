@@ -2,7 +2,8 @@ const apiResponse = require("../utils/ApiResponse");
 const apiError = require("../utils/ApiError");
 const Banner = require("../Model/banner.model");
 const { uploadImage, deleteImage } = require("../utils/cloudinary");
-
+const nodeCache = require("node-cache");
+const Cache = new nodeCache();
 const createBanner = async (req, res) => {
   try {
     const { title } = req.body;
@@ -41,11 +42,18 @@ const createBanner = async (req, res) => {
 
 const getBanner = async (req, res) => {
   try {
-    const banner = await Banner.find();
-    if (banner.length === 0 || !banner) {
-      return res.status(500).json(new apiError(500, "internal error"));
+    const bannerData = Cache.get("banner");
+    if (!bannerData) {
+      const banner = await Banner.find();
+
+      if (banner.length === 0 || !banner) {
+        return res.status(500).json(new apiError(500, "internal error"));
+      }
+      Cache.set("banner", banner, 60 * 60 * 60);
+      return res.status(200).json(new apiResponse(200, "", banner));
+    } else {
+      return res.status(200).json(new apiResponse(200, "", bannerData));
     }
-    return res.status(200).json(new apiResponse(200, banner));
   } catch (error) {
     console.log("error while getting banner ", error);
     res

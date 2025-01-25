@@ -4,6 +4,8 @@ const apiResponse = require("../utils/ApiResponse.js");
 const { uploadImage, deleteImage } = require("../utils/cloudinary.js");
 const subCategoryModel = require("../Model/subCategory.model.js");
 const categoryModel = require("../Model/category.model.js");
+const nodeCache = require("node-cache");
+const cacheData = new nodeCache();
 
 const createProduct = async (req, res) => {
   try {
@@ -117,15 +119,24 @@ const createProduct = async (req, res) => {
 
 const getAllProduct = async (req, res) => {
   try {
-    const products = await Product.find();
-    if (!products) {
+    const cache = cacheData.get("allProducts");
+    console.log(cache);
+    if (cache == undefined) {
+      const products = await Product.find();
+      if (!products) {
+        return res
+          .status(500)
+          .json(new apiError(500, "products not found", null, null));
+      }
+      cacheData.set("allProducts", JSON.stringify(products), 60 * 60 * 60);
       return res
-        .status(500)
-        .json(new apiError(500, "products not found", null, null));
+        .status(200)
+        .json(new apiResponse(200, "products found", products, null));
+    } else {
+      res
+        .status(200)
+        .json(new apiResponse(200, "products found", JSON.parse(cache), null));
     }
-    res
-      .status(200)
-      .json(new apiResponse(200, "products found", products, null));
   } catch (error) {
     console.log(`error from getting all product: ${error}`);
     res.status(400).json(new apiError(400, "bad request", null, null));
