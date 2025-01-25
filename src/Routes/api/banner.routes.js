@@ -5,15 +5,15 @@ const {
   createBanner,
   updateBanner,
   getBanner,
+  deleteBanner,
 } = require("../../Controller/banner.controller");
 
 _.route("/")
   .post(upload.fields([{ name: "image", maxCount: 1 }]), createBanner)
   .get(getBanner);
 
-_.route("/:id").put(
-  upload.fields([{ name: "image", maxCount: 1 }]),
-  updateBanner
-);
+_.route("/:id")
+  .put(upload.fields([{ name: "image", maxCount: 1 }]), updateBanner)
+  .delete(deleteBanner);
 
 module.exports = _;

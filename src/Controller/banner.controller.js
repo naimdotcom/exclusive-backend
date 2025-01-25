@@ -14,8 +14,7 @@ const createBanner = async (req, res) => {
     const banner = await Banner.find({
       title: title,
     });
-
-    if (banner) {
+    if (banner.length > 0) {
       return res.status(406).json(new apiError(406, "banner already exist"));
     }
 
@@ -96,4 +95,20 @@ const updateBanner = async (req, res) => {
   }
 };
 
-module.exports = { createBanner, updateBanner, getBanner };
+const deleteBanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bannerDeleted = await Banner.findByIdAndDelete({ _id: id });
+
+    return res
+      .status(200)
+      .json(new apiResponse(200, "banner deleted", bannerDeleted));
+  } catch (error) {
+    console.log("error while deleting banner ", error);
+    res
+      .status(500)
+      .json(new apiError(500, "something went wrong while deletings banner"));
+  }
+};
+
+module.exports = { createBanner, updateBanner, getBanner, deleteBanner };
