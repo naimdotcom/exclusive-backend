@@ -120,7 +120,6 @@ const createProduct = async (req, res) => {
 const getAllProduct = async (req, res) => {
   try {
     const cache = cacheData.get("allProducts");
-    console.log(cache);
     if (cache == undefined) {
       const products = await Product.find();
       if (!products) {
