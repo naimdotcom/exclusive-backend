@@ -23,12 +23,16 @@ const productSchema = new Schema(
     },
     review: [
       {
-        commnet: {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "user",
+        },
+        comment: {
           type: String,
           trim: true,
         },
         rating: {
-          type: String,
+          type: Number,
           trim: true,
         },
       },
@@ -57,6 +61,10 @@ const productSchema = new Schema(
     subcategory: {
       type: Schema.Types.ObjectId,
       ref: "subCategory",
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     images: [
       {

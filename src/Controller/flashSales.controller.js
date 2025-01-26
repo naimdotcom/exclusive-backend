@@ -41,7 +41,7 @@ const getAllFlashSale = async (req, res) => {
     const data = cacheData.get("flashsale");
     if (data == undefined) {
       const allflashsale = await FlashSales.find().populate("product");
-      cacheData.set("flashsale", allflashsale, 60 * 60 * 60);
+      cacheData.set("flashsale", allflashsale, 60);
       if (!allflashsale) {
         return res
           .status(500)

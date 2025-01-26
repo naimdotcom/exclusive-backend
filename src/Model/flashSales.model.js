@@ -6,6 +6,7 @@ const flashSalesSchema = new Schema({
     type: String,
     require: true,
     trim: true,
+    index: true,
   },
   product: {
     type: Schema.Types.ObjectId,
