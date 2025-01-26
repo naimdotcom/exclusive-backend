@@ -2,6 +2,7 @@ const apiResponse = require("../utils/ApiResponse");
 const apiError = require("../utils/ApiError");
 const categoryModel = require("../Model/category.model");
 const { uploadImage, deleteImage } = require("../utils/cloudinary");
+const { mongoose } = require("mongoose");
 
 const createCategory = async (req, res) => {
   try {
@@ -108,13 +109,21 @@ const updateCategory = async (req, res) => {
   }
 };
 
-const getCategoryById = async (req, res) => {
+const getCategoryByIdOrName = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const category = await categoryModel
-      .findById(id)
+    // Check if the id is a valid ObjectId
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(id);
 
+    // Build the query conditionally
+    const query = isValidObjectId
+      ? { _id: id } // Query by _id or name
+      : { name: id }; // Query only by name
+
+    const category = await categoryModel
+      .find(query)
+      .populate("product")
       .select("-__v -createdAt -updatedAt");
 
     if (!category) {
@@ -125,7 +134,7 @@ const getCategoryById = async (req, res) => {
 
     res
       .status(200)
-      .json(new apiResponse(200, "category created", category, null));
+      .json(new apiResponse(200, "category created", category[0], null));
   } catch (error) {
     console.log(`error from  getting single category: ${error}`);
     res.status(400).json(new apiError(400, "bad request", null, null));
@@ -136,5 +145,5 @@ module.exports = {
   createCategory,
   getAllCategory,
   updateCategory,
-  getCategoryById,
+  getCategoryByIdOrName,
 };

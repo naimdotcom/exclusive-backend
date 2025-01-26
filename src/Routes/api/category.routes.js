@@ -4,7 +4,7 @@ const { upload } = require("../../middleware/multer.middleware");
 const {
   createCategory,
   getAllCategory,
-  getCategoryById,
+  getCategoryByIdOrName,
   updateCategory,
 } = require("../../Controller/category.controller");
 
@@ -16,6 +16,6 @@ _.route("/")
 // todo: update category and get single category
 _.route("/:id")
   .put(upload.fields([{ name: "image", maxCount: 1 }]), updateCategory)
-  .get(getCategoryById);
+  .get(getCategoryByIdOrName);
 
 module.exports = _;
