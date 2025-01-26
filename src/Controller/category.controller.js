@@ -39,6 +39,7 @@ const getAllCategory = async (req, res) => {
   try {
     const category = await categoryModel
       .find()
+      .populate("subCategory product")
       .select("-__v -createdAt -updatedAt");
 
     if (!category) {
@@ -123,7 +124,7 @@ const getCategoryByIdOrName = async (req, res) => {
 
     const category = await categoryModel
       .find(query)
-      .populate("product")
+      .populate("product subCategory")
       .select("-__v -createdAt -updatedAt");
 
     if (!category) {
