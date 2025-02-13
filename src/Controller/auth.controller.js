@@ -168,9 +168,10 @@ const login = async (req, res) => {
 
     // todo: check if user is verified
     if (!user.isVerified) {
-      return res
-        .status(401)
-        .json(new apiError(401, "user not verified", null, null));
+      return res.status(401).json({
+        ...new apiError(401, `user is not verified`),
+        redirectUrl: `http://localhost:5173/otp/${user.email}`,
+      });
     }
 
     // todo: check if password is correct
@@ -230,7 +231,9 @@ const verifyTheOTP = async (req, res) => {
       !email == "null" ||
       !email == "undefined"
     ) {
-      return res.status(400).json(new apiError(400, "bad request", null, null));
+      return res
+        .status(400)
+        .json({ ...new apiError(400, "bad request", null, null) });
     }
 
     // todo: check if user exist
@@ -256,13 +259,14 @@ const verifyTheOTP = async (req, res) => {
       new Date(user.otpExpirationTime).getTime() < new Date().getTime()
     );
 
-    if (
-      user.otp !== otpString ||
-      new Date(user.otpExpirationTime).getTime() < new Date().getTime()
-    ) {
+    if (user.otp !== otpString) {
+      return res.status(400).json(new apiError(400, "invalid otp", null, null));
+    }
+
+    if (new Date(user.otpExpirationTime).getTime() < new Date().getTime()) {
       return res
         .status(400)
-        .json(new apiError(400, "invalid otp or time expired", null, null));
+        .json({ ...new apiError(400, "time expired"), redirectUrl: "" });
     }
 
     // todo: update user
