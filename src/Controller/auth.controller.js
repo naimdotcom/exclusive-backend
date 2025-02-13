@@ -144,6 +144,7 @@ const registration = async (req, res) => {
 // todo: user login
 
 const login = async (req, res) => {
+  console.log(req.body);
   try {
     const { email, password, phoneNumber } = req.body;
 

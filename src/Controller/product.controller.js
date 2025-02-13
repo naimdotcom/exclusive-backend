@@ -95,12 +95,13 @@ const createProduct = async (req, res) => {
       category: isCategoryExist[0]?.id,
       ...(isSubcategoryExist[0] && { subcategory: isCategoryExist[0].id }),
     });
-    isCategoryExist[0].products.push(savedProduct.id);
+    isCategoryExist[0].product.push(savedProduct.id);
     if (isSubcategoryExist.length > 0) {
       isSubcategoryExist[0].products.push(savedProduct.id);
     }
 
     await isCategoryExist[0].save();
+    await isSubcategoryExist[0].save();
 
     if (!savedProduct) {
       return res
