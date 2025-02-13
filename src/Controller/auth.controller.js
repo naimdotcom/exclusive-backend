@@ -21,20 +21,14 @@ const DbSelect =
   "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified";
 
 const registration = async (req, res) => {
+  console.log(req.body);
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      password,
-      address1,
-      address2,
-    } = req.body;
+    const { firstName, lastName, email, phone, password, address1, address2 } =
+      req.body;
 
     // todo: validation of request
 
-    if (!firstName || !lastName || !email || !phoneNumber || !password) {
+    if (!firstName || !lastName || !email || !phone || !password) {
       return res.status(400).json(new apiError(400, "bad request", null, null));
     }
     if (!validateEmail(email)) {
@@ -47,7 +41,7 @@ const registration = async (req, res) => {
     //     .status(400)
     //     .json(new apiError(400, "invalid password", null, null));
     // }
-    if (!validateBdPhoneNumber(phoneNumber)) {
+    if (!validateBdPhoneNumber(phone)) {
       return res
         .status(400)
         .json(new apiError(400, "invalid phone number", null, null));
@@ -56,7 +50,7 @@ const registration = async (req, res) => {
     // todo: check if user already exist
 
     const user = await userModel.findOne({
-      $or: [{ email: email }, { phoneNumber: phoneNumber }],
+      $or: [{ email: email }, { phoneNumber: phone }],
     });
 
     if (user) {
@@ -105,7 +99,7 @@ const registration = async (req, res) => {
       firstName,
       ...(lastName && { lastName }),
       email,
-      phoneNumber,
+      phoneNumber: phone,
       password: hashedPassword,
       ...(address1 && { address1 }),
       ...(address2 && { address2 }),
