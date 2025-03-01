@@ -215,6 +215,24 @@ const login = async (req, res) => {
   }
 };
 
+const userAuth = async (req, res) => {
+  try {
+    const user = req.user;
+    console.log(user);
+
+    res.status(200).json(new apiResponse(200, "success", user));
+  } catch (error) {}
+};
+
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.status(200).json(new apiResponse(200, "Logout successful", null, null));
+  } catch (error) {
+    res.status(500).json(new apiError(500, "Server error", null, error));
+  }
+};
+
 // todo: verify otp
 
 const verifyTheOTP = async (req, res) => {
@@ -457,4 +475,6 @@ module.exports = {
   login,
   updateEmail,
   resendTheOTP,
+  userAuth,
+  logout,
 };

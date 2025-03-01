@@ -5,7 +5,10 @@ const {
   verifyTheOTP,
   login,
   resendTheOTP,
+  userAuth,
+  logout,
 } = require("../../Controller/auth.controller.js");
+const { verifyAuth } = require("../../middleware/auth.middleware.js");
 
 // todo:  health cheacker route
 
@@ -26,6 +29,12 @@ _.route("/verify-otp").post(verifyTheOTP);
 // todo: user login
 
 _.route("/login").post(login);
+
+// logout
+_.route("/logout").get(logout);
+
+// user auth
+_.route("/verify").get(verifyAuth, userAuth);
 
 // todo: resend the otp
 
