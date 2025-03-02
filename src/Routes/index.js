@@ -6,6 +6,7 @@ const productRoutes = require("./api/product.routes.js");
 const subCategoryRoutes = require("./api/subCategory.routes.js");
 const bannerRoutes = require("./api/banner.routes.js");
 const flashSalesRoutes = require("./api/flashSales.routes.js");
+const cartRoutes = require("./api/cart.routes.js");
 
 _.use("/auth", authRoutes);
 _.use("/category", categoryRoutes);
@@ -18,5 +19,6 @@ _.get("/health", (req, res) => {
     data: "health api",
   });
 });
+_.use("/cart", cartRoutes);
 
 module.exports = _;

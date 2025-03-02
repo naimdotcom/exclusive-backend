@@ -218,8 +218,6 @@ const login = async (req, res) => {
 const userAuth = async (req, res) => {
   try {
     const user = req.user;
-    console.log(user);
-
     res.status(200).json(new apiResponse(200, "success", user));
   } catch (error) {}
 };
