@@ -7,6 +7,7 @@ const subCategoryRoutes = require("./api/subCategory.routes.js");
 const bannerRoutes = require("./api/banner.routes.js");
 const flashSalesRoutes = require("./api/flashSales.routes.js");
 const cartRoutes = require("./api/cart.routes.js");
+const orderRoutes = require("./api/order.routes.js");
 
 _.use("/auth", authRoutes);
 _.use("/category", categoryRoutes);
@@ -15,6 +16,7 @@ _.use("/subcategory", subCategoryRoutes);
 _.use("/banner", bannerRoutes);
 _.use("/flashsales", flashSalesRoutes);
 _.use("/cart", cartRoutes);
+_.use("/order", orderRoutes);
 _.get("/health", (req, res) => {
   res.status(200).json({
     data: "health api",
