@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const { Types } = mongoose;
+
 const orderSchema = new mongoose.Schema(
   {
     user: {
