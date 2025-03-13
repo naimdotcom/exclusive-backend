@@ -93,7 +93,7 @@ const placeOrder = async (req, res) => {
       const sslcz = new SSLCommerzPayment(
         process.env.SSLCOMMERZ_STORE_ID,
         process.env.SSLCOMMERZ_STORE_PASSWORD,
-        process.env.SSLCOMMERZ_IS_LIVE
+        false
       );
       const apiRes = await sslcz.init(data);
       let GatewayPageURL = apiRes.GatewayPageURL;
