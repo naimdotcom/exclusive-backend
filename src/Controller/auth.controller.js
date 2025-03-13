@@ -189,6 +189,7 @@ const login = async (req, res) => {
       firstName: user.firstName,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      isVerified: user.isVerified,
     };
     /**
      * todo: generate jwt token
@@ -196,19 +197,25 @@ const login = async (req, res) => {
      */
     const token = await generateJwtToken(payload);
 
-    // todo: send email to user that he's logged in
-
-    const info = await SendMail(
-      logedInEmailTemplate(user.firstName, user.email),
-      user.email,
-      "logged in exlusive 🫶"
-    );
-
     // todo: send response to user with token
     res
       .status(200)
       .cookie("token", token)
       .json(new apiResponse(200, "success", { user, token }, null));
+
+    setImmediate(async () => {
+      try {
+        // todo: send email to user that he's logged in
+
+        const info = await SendMail(
+          logedInEmailTemplate(user.firstName, user.email),
+          user.email,
+          "logged in exlusive 🫶"
+        );
+      } catch (error) {
+        console.error("Failed to send login email:", error);
+      }
+    });
   } catch (error) {
     console.log("error from login controller", error);
     res.status(500).json(new apiError(500, "server error", null, error));

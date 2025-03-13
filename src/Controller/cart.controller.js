@@ -5,12 +5,15 @@ const Cart = require("../Model/cart.model");
 const createCart = async (req, res) => {
   try {
     const { product, quantity } = req.body;
+    const user = req.user;
     if (!product) {
       return res.status(401).json(new apiError(401, "product not found"));
     }
     // check if product already exist in cart
 
-    const isExistProduct = await Cart.find({ product: product });
+    const isExistProduct = await Cart.find({
+      $and: [{ product: product }, { user: user._id }],
+    });
 
     if (isExistProduct.length > 0) {
       return res

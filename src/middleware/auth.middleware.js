@@ -24,6 +24,9 @@ const verifyAuth = async (req, res, next) => {
     }
   } catch (error) {
     console.error("error form authguard middleware", error);
+    res
+      .status(401)
+      .json({ message: "Token expired or invalid ", verified: false });
   }
 };
 

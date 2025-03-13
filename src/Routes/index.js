@@ -14,11 +14,11 @@ _.use("/product", productRoutes);
 _.use("/subcategory", subCategoryRoutes);
 _.use("/banner", bannerRoutes);
 _.use("/flashsales", flashSalesRoutes);
+_.use("/cart", cartRoutes);
 _.get("/health", (req, res) => {
   res.status(200).json({
     data: "health api",
   });
 });
-_.use("/cart", cartRoutes);
 
 module.exports = _;
