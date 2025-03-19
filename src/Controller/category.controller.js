@@ -40,7 +40,7 @@ const getAllCategory = async (req, res) => {
     const category = await categoryModel
       .find()
       .populate("subCategory product")
-      .select("-__v -createdAt -updatedAt");
+      .select("-__v -updatedAt");
 
     if (!category) {
       return res
@@ -142,9 +142,38 @@ const getCategoryByIdOrName = async (req, res) => {
   }
 };
 
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the id is a valid ObjectId
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(id);
+
+    // Build the query conditionally
+    const query = isValidObjectId
+      ? { _id: id } // Query by _id or name
+      : { name: id }; // Query only by name
+
+    const deletedCategory = await categoryModel.findOneAndDelete(query);
+    if (!deletedCategory) {
+      return res
+        .status(400)
+        .json(new apiError(400, "category not deleted", null, null));
+    }
+
+    res
+      .status(200)
+      .json(new apiResponse(200, "category deleted", deletedCategory, null));
+  } catch (error) {
+    console.log("error from deleting category", error);
+    res.status(400).json(new apiError(400, "bad request", null, null));
+  }
+};
+
 module.exports = {
   createCategory,
   getAllCategory,
   updateCategory,
   getCategoryByIdOrName,
+  deleteCategory,
 };

@@ -6,6 +6,7 @@ const {
   getAllCategory,
   getCategoryByIdOrName,
   updateCategory,
+  deleteCategory,
 } = require("../../Controller/category.controller");
 
 // todo: create category and get all category
@@ -16,6 +17,7 @@ _.route("/")
 // todo: update category and get single category
 _.route("/:id")
   .put(upload.fields([{ name: "image", maxCount: 1 }]), updateCategory)
-  .get(getCategoryByIdOrName);
+  .get(getCategoryByIdOrName)
+  .delete(deleteCategory);
 
 module.exports = _;
