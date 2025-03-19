@@ -29,6 +29,11 @@ const createBanner = async (req, res) => {
       return res.status(500).json(new apiError(500, "something went wrong"));
     }
 
+    const bannerData = Cache.get("banner");
+    if (bannerData) {
+      Cache.del("banner");
+    }
+
     return res
       .status(201)
       .json(new apiResponse(201, "banner created..", saveBanner));
@@ -91,6 +96,11 @@ const updateBanner = async (req, res) => {
         .status(501)
         .json(new apiError(501, "banner not updated, internal error"));
     }
+    //  update the cache
+    const bannerData = Cache.get("banner");
+    if (bannerData) {
+      Cache.del("banner");
+    }
 
     return res
       .status(200)
@@ -107,6 +117,12 @@ const deleteBanner = async (req, res) => {
   try {
     const { id } = req.params;
     const bannerDeleted = await Banner.findByIdAndDelete({ _id: id });
+
+    //  update the cache
+    const bannerData = Cache.get("banner");
+    if (bannerData) {
+      Cache.del("banner");
+    }
 
     return res
       .status(200)
