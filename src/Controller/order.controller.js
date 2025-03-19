@@ -64,10 +64,10 @@ const placeOrder = async (req, res) => {
         total_amount: orderinfo.totalPrice,
         currency: "BDT",
         tran_id: transId, // use unique tran_id for each api call
-        success_url: "http://localhost:3000/api/v1/success",
-        fail_url: "http://localhost:3000/api/v1/fail",
-        cancel_url: "http://localhost:3000/api/v1/cancel",
-        ipn_url: "http://localhost:3000/api/v1/ipn",
+        success_url: "http://localhost:3000/api/v1/payment/success",
+        fail_url: "http://localhost:3000/api/v1/payment/fail",
+        cancel_url: "http://localhost:3000/api/v1/payment/cancel",
+        ipn_url: "http://localhost:3000/api/v1/payment/ipn",
         shipping_method: "Courier",
         product_name: "Computer.",
         product_category: "Electronic",
@@ -106,8 +106,6 @@ const placeOrder = async (req, res) => {
       });
       order.paymentinfo.tran_id = transId;
       await order.save();
-
-      console.log(GatewayPageURL);
       return res
         .status(200)
         .json(new apiResponse(200, "order placed", { url: GatewayPageURL }));

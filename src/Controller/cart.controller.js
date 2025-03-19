@@ -79,6 +79,22 @@ const deleteUserCart = async (req, res) => {
   }
 };
 
+const deleteAllUserCart = async (req, res) => {
+  try {
+    const deletedCart = await Cart.deleteMany({ user: req.user._id });
+
+    if (!deletedCart) {
+      return res.status(401).json(new apiError(401, `cart not found`));
+    }
+    return res
+      .status(200)
+      .json(new apiResponse(200, `cart deleted`, deleteAllUserCart));
+  } catch (error) {
+    console.log("error in delete cart for user::", error);
+    res.status(500).json(new apiError(500, "something went wrong"));
+  }
+};
+
 const actionForCart = async (req, res) => {
   try {
     const { action, id } = req.query;
@@ -122,4 +138,5 @@ module.exports = {
   getAllCartItemForUser,
   deleteUserCart,
   actionForCart,
+  deleteAllUserCart,
 };
