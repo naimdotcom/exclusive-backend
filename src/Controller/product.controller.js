@@ -73,8 +73,6 @@ const createProduct = async (req, res) => {
 
     const productUploader = async (path) => {
       const { secure_url } = await uploadImage(path);
-      console.log(secure_url);
-
       cloudinaryUrls.push(secure_url);
     };
 
@@ -82,14 +80,12 @@ const createProduct = async (req, res) => {
       await productUploader(img.path);
     }
 
-    console.log(cloudinaryUrls);
-
     const savedProduct = await Product.create({
       name: name,
       description: description,
       price: price,
       rating: rating,
-      size: size,
+      size: JSON.parse(size),
       color: color,
       images: [...cloudinaryUrls],
       category: isCategoryExist[0]?.id,

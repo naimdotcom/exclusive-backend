@@ -12,13 +12,15 @@ const createSubCategory = async (req, res) => {
         .status(401)
         .json(new apiError(401, "creadential missing. name or categoryID"));
     }
+    const capName = name.charAt(0).toUpperCase() + name.slice(1);
 
     // cheack if user exist or not
-    const isSubcategoryExist = await SubCategory.find({ name: name });
-    if (!isSubcategoryExist) {
+    const isSubcategoryExist = await SubCategory.find({ name: capName });
+    if (!isSubcategoryExist || isSubcategoryExist.length > 0) {
       res
         .status(409)
         .json(new apiError(409, "subcategory already exist, try another name"));
+      return;
     }
 
     // is category exist or not
@@ -29,7 +31,7 @@ const createSubCategory = async (req, res) => {
 
     // create subcategory in db
     const subcategory = await SubCategory.create({
-      name: name,
+      name: capName,
       category: categoryId,
     });
     if (!subcategory) {
