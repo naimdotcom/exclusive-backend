@@ -6,6 +6,7 @@ const {
   getSubcategoryById,
   subcategoryUpdate,
   subcategoryDelete,
+  getSubcategoryByCategory,
 } = require("../../Controller/subCategory.controller");
 
 _.route("/").post(createSubCategory).get(getSubcategory);
@@ -14,4 +15,5 @@ _.route("/:id")
   .get(getSubcategoryById)
   .put(subcategoryUpdate)
   .delete(subcategoryDelete);
+
 module.exports = _;

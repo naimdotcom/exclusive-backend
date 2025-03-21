@@ -20,6 +20,8 @@ const createProduct = async (req, res) => {
       categoryId,
       subcategoryId,
       subcategory,
+      quantity,
+      discount,
     } = req.body;
 
     if (
@@ -30,7 +32,9 @@ const createProduct = async (req, res) => {
       !(size.length > 0) ||
       !color ||
       (!subcategory && !subcategoryId) ||
-      (!category && !categoryId)
+      (!category && !categoryId) ||
+      !quantity ||
+      !discount
     ) {
       return res
         .status(400)
@@ -61,7 +65,7 @@ const createProduct = async (req, res) => {
       $or: [{ _id: subcategoryId }, { name: subcategory }],
     });
 
-    if (!isCategoryExist) {
+    if (!isCategoryExist || !isSubcategoryExist) {
       res
         .status(400)
         .json(
@@ -80,16 +84,21 @@ const createProduct = async (req, res) => {
       await productUploader(img.path);
     }
 
+    const sizes = Array.isArray(req.body.size)
+      ? req.body.size
+      : [req.body.size];
     const savedProduct = await Product.create({
       name: name,
       description: description,
       price: price,
       rating: rating,
-      size: JSON.parse(size),
+      size: sizes,
       color: color,
       images: [...cloudinaryUrls],
       category: isCategoryExist[0]?.id,
-      ...(isSubcategoryExist[0] && { subcategory: isCategoryExist[0].id }),
+      ...(isSubcategoryExist[0] && { subcategory: isSubcategoryExist[0].id }),
+      stock: quantity,
+      discount: discount,
     });
     isCategoryExist[0].product.push(savedProduct.id);
     if (isSubcategoryExist.length > 0) {

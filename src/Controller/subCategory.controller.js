@@ -98,6 +98,24 @@ const getSubcategoryById = async (req, res) => {
   }
 };
 
+const getSubcategoryByCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // get subcategory By category id
+    const subcategory = await SubCategory.find({ category: id })
+      .populate("category", "-__v")
+      .select("-__v");
+  } catch (error) {
+    console.log("error while getting subcategory via ID", error);
+    res
+      .status(500)
+      .json(
+        new apiError(500, "something went wrong while getting subcategory")
+      );
+  }
+};
+
 const subcategoryUpdate = async (req, res) => {
   try {
     const { name, categoryId } = req.body;
@@ -167,4 +185,5 @@ module.exports = {
   getSubcategoryById,
   subcategoryUpdate,
   subcategoryDelete,
+  getSubcategoryByCategory,
 };
