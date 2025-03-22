@@ -6,6 +6,7 @@ const {
   getSingleProduct,
   updateProductInformation,
   updateProductImages,
+  deleteProduct,
 } = require("../../Controller/product.controller");
 const _ = express.Router();
 
@@ -16,6 +17,7 @@ _.route("/")
 _.route("/:id")
   .get(getSingleProduct)
   .put(updateProductInformation)
-  .patch(upload.fields([{ name: "image", maxCount: 4 }]), updateProductImages);
+  .patch(upload.fields([{ name: "image", maxCount: 4 }]), updateProductImages)
+  .delete(deleteProduct);
 
 module.exports = _;

@@ -199,6 +199,11 @@ const updateProductInformation = async (req, res) => {
         );
     }
 
+    const cache = cacheData.get("allProducts");
+    if (cache) {
+      cacheData.del("allProducts");
+    }
+
     res
       .status(200)
       .json(new apiResponse(200, "product updated", updatedProduct, null));
@@ -213,14 +218,32 @@ const updateProductImages = async (req, res) => {
     const { id } = req.params;
     const { imageInfo } = req.body;
 
+    const uploadedFiles = req.files?.image
+      ? Array.isArray(req.files.image)
+        ? req.files.image
+        : [req.files.image]
+      : [];
+
+    const imagesInfo = imageInfo
+      ? Array.isArray(imageInfo)
+        ? imageInfo
+        : [imageInfo]
+      : [];
+
+    console.log("imageInfo", imagesInfo);
+    console.log("req.files", uploadedFiles);
+
     // check if there is any image or not
-    if (req.files.image.length === 0 && !imageInfo) {
+    if (
+      uploadedFiles.length === 0 &&
+      (!imagesInfo || !Array.isArray(imagesInfo) || imagesInfo.length === 0)
+    ) {
       return res
         .status(400)
         .json(
           new apiError(
             400,
-            "bad request - you must provide at least one image",
+            "Bad request - you must provide at least one image",
             null,
             null
           )
@@ -237,19 +260,21 @@ const updateProductImages = async (req, res) => {
     }
 
     // delete the image from cloudinary
-    if (imageInfo) {
-      for (let img of imageInfo) {
+    if (Array.isArray(imagesInfo) && imagesInfo.length > 0) {
+      for (let img of imagesInfo) {
         const allParticle = img.split("/");
         const cloudinaryUrl = allParticle[allParticle.length - 1].split(".")[0];
         await deleteImage(cloudinaryUrl);
         product.images.pull(img);
+        console.log("image deleted from cloudinary", img);
       }
+      console.log("images deleted from cloudinary");
     }
 
     //upload the image in cloudinary and store url in array
     let newImageUrl = [];
-    if (req.files.image.length > 0) {
-      for (let img of req.files?.image) {
+    if (uploadedFiles.length > 0) {
+      for (let img of uploadedFiles) {
         const uploadedImage = await uploadImage(img.path);
         newImageUrl.push(uploadedImage.secure_url);
       }
@@ -264,6 +289,11 @@ const updateProductImages = async (req, res) => {
         .json(new apiError(400, "update failed", null, null));
     }
 
+    const cache = cacheData.get("allProducts");
+    if (cache) {
+      cacheData.del("allProducts");
+    }
+
     // return the updated product
     res
       .status(200)
@@ -274,10 +304,33 @@ const updateProductImages = async (req, res) => {
   }
 };
 
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProduct = await Product.findByIdAndDelete(id);
+    if (!deletedProduct) {
+      return res
+        .status(400)
+        .json(new apiError(400, "product not found", null, null));
+    }
+    const cache = cacheData.get("allProducts");
+    if (cache) {
+      cacheData.del("allProducts");
+    }
+    res
+      .status(200)
+      .json(new apiResponse(200, "product deleted", deletedProduct, null));
+  } catch (error) {
+    console.log(`error from deleting product: ${error}`);
+    res.status(400).json(new apiError(400, "bad request", null, null));
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProduct,
   getSingleProduct,
   updateProductInformation,
   updateProductImages,
+  deleteProduct,
 };
