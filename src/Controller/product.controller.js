@@ -214,7 +214,7 @@ const updateProductImages = async (req, res) => {
     const { imageInfo } = req.body;
 
     // check if there is any image or not
-    if (req.files.image.length === 0) {
+    if (req.files.image.length === 0 && !imageInfo) {
       return res
         .status(400)
         .json(
@@ -237,18 +237,22 @@ const updateProductImages = async (req, res) => {
     }
 
     // delete the image from cloudinary
-    for (let img of imageInfo) {
-      product.images.pull(img);
-      const allParticle = img.split("/");
-      const cloudinaryUrl = allParticle[allParticle.length - 1].split(".")[0];
-      await deleteImage(cloudinaryUrl);
+    if (imageInfo) {
+      for (let img of imageInfo) {
+        const allParticle = img.split("/");
+        const cloudinaryUrl = allParticle[allParticle.length - 1].split(".")[0];
+        await deleteImage(cloudinaryUrl);
+        product.images.pull(img);
+      }
     }
 
     //upload the image in cloudinary and store url in array
     let newImageUrl = [];
-    for (let img of req.files?.image) {
-      const uploadedImage = await uploadImage(img.path);
-      newImageUrl.push(uploadedImage.secure_url);
+    if (req.files.image.length > 0) {
+      for (let img of req.files?.image) {
+        const uploadedImage = await uploadImage(img.path);
+        newImageUrl.push(uploadedImage.secure_url);
+      }
     }
 
     // check if the image is updated or not
