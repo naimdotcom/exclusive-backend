@@ -36,7 +36,18 @@ const placeOrder = async (req, res) => {
     const orderinfo = cart.reduce(
       (initalItem, item) => {
         const { _id, product, quantity } = item;
-        initalItem.cart.push(_id);
+        const discountedPrice =
+          parseInt(product.price) -
+          (parseInt(product.price) * parseInt(product.discount)) / 100;
+        initalItem.cart.push({
+          product: product._id,
+          quantity: quantity,
+          productPrice: product.price,
+          productDiscount: product.discount,
+          totalPrice: discountedPrice * parseInt(quantity),
+          productSize: item.size,
+          productColor: item.color,
+        });
         initalItem.totalPrice += parseInt(product.price) * parseInt(quantity);
         return initalItem;
       },
@@ -53,18 +64,19 @@ const placeOrder = async (req, res) => {
       paymentinfo.tran_id = transId;
       const order = await new Order({
         user: _id,
-        cart: orderinfo.cart,
+        cartItem: orderinfo.cart,
         paymentinfo: paymentinfo,
         customerinfo: customerInfo,
         totalPrice: orderinfo.totalPrice,
       }).save();
+
       return res.status(200).json(new apiResponse(200, "order placed", order));
     } else if (paymentmethod == "online") {
       const data = {
         total_amount: orderinfo.totalPrice,
         currency: "BDT",
         tran_id: transId, // use unique tran_id for each api call
-        success_url: "http://localhost:3000/api/v1/payment/success",
+        success_url: `http://localhost:3000/api/v1/payment/success/${transId}`,
         fail_url: "http://localhost:3000/api/v1/payment/fail",
         cancel_url: "http://localhost:3000/api/v1/payment/cancel",
         ipn_url: "http://localhost:3000/api/v1/payment/ipn",
@@ -97,15 +109,16 @@ const placeOrder = async (req, res) => {
       );
       const apiRes = await sslcz.init(data);
       let GatewayPageURL = apiRes.GatewayPageURL;
-      const order = await new Order({
+      const order = new Order({
         user: _id,
-        cart: orderinfo.cart,
+        cartItem: orderinfo.cart,
         paymentinfo: paymentinfo,
         customerinfo: customerInfo,
         totalPrice: orderinfo.totalPrice,
       });
       order.paymentinfo.tran_id = transId;
       await order.save();
+
       return res
         .status(200)
         .json(new apiResponse(200, "order placed", { url: GatewayPageURL }));
@@ -116,6 +129,57 @@ const placeOrder = async (req, res) => {
   }
 };
 
+const getOrder = async (req, res) => {
+  try {
+    const order = await Order.find()
+      .populate({
+        path: "user",
+        select:
+          "-password -isVerified -otp -otpExpirationTime -createdAt -updatedAt",
+      })
+      .populate("cartItem")
+      .sort({ createdAt: -1 });
+
+    if (!order) {
+      return res
+        .status(400)
+        .json(new apiError(400, "order not found", null, null));
+    }
+
+    res.status(200).json(new apiResponse(200, "order found", order, null));
+  } catch (error) {
+    console.log(`error from get order: ${error}`);
+    res.status(400).json(new apiError(400, "bad request", null, null));
+  }
+};
+
+const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id)
+      .populate({
+        path: "user",
+        select:
+          "-password -isVerified -otp -otpExpirationTime -createdAt -updatedAt",
+      })
+      .populate("cartItem")
+      .sort({ createdAt: -1 });
+
+    if (!order) {
+      return res
+        .status(400)
+        .json(new apiError(400, "order not found", null, null));
+    }
+
+    res.status(200).json(new apiResponse(200, "order found", order, null));
+  } catch (error) {
+    console.log(`error from get order: ${error}`);
+    res.status(400).json(new apiError(400, "bad request", null, null));
+  }
+};
+
 module.exports = {
   placeOrder,
+  getOrder,
+  getOrderById,
 };

@@ -5,13 +5,42 @@ const { Types } = mongoose;
 const orderSchema = new mongoose.Schema(
   {
     user: {
-      type: String,
+      type: Types.ObjectId,
+      ref: "user",
       required: true,
+      index: true,
     },
     cartItem: [
       {
-        type: Types.ObjectId,
-        ref: "cart",
+        product: {
+          type: Types.ObjectId,
+          ref: "product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+        productDiscount: {
+          type: Number,
+          required: true,
+        },
+        totalPrice: {
+          type: Number,
+          required: true,
+        },
+        productPrice: {
+          type: Number,
+          required: true,
+        },
+        productSize: {
+          type: String,
+          default: "S",
+          enum: ["XS", "S", "L", "M", "XL", "XXL"],
+        },
+        color: {
+          type: String,
+        },
       },
     ],
     customerinfo: {
@@ -71,6 +100,7 @@ const orderSchema = new mongoose.Schema(
       tran_id: {
         type: String,
         trim: true,
+        index: true,
       },
     },
     status: {
@@ -80,12 +110,9 @@ const orderSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    subTotal: {
+    totalPrice: {
       type: Number,
       default: 0,
-    },
-    totalQuantity: {
-      type: Number,
     },
   },
   {

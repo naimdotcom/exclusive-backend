@@ -23,6 +23,13 @@ const cartSchema = new Schema(
     totalPrice: {
       type: Number,
     },
+    size: {
+      type: String,
+      enum: ["S", "M", "L", "XL", "XXL"],
+    },
+    color: {
+      type: String,
+    },
   },
   {
     timeseries: true,
