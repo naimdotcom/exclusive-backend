@@ -48,7 +48,7 @@ const placeOrder = async (req, res) => {
           productSize: item.size,
           productColor: item.color,
         });
-        initalItem.totalPrice += parseInt(product.price) * parseInt(quantity);
+        initalItem.totalPrice += discountedPrice * parseInt(quantity);
         return initalItem;
       },
       {
@@ -58,7 +58,7 @@ const placeOrder = async (req, res) => {
     );
 
     const id = crypto.randomUUID();
-    const transId = `REF${id.split("-").join("")}`;
+    const transId = `REF${id.split("-")[0]}`;
 
     if (paymentmethod == "cash") {
       paymentinfo.tran_id = transId;
@@ -72,11 +72,20 @@ const placeOrder = async (req, res) => {
 
       return res.status(200).json(new apiResponse(200, "order placed", order));
     } else if (paymentmethod == "online") {
+      const order = new Order({
+        user: _id,
+        cartItem: orderinfo.cart,
+        paymentinfo: paymentinfo,
+        customerinfo: customerInfo,
+        totalPrice: orderinfo.totalPrice,
+      });
+      order.paymentinfo.tran_id = transId;
+      console.log(order.id);
       const data = {
         total_amount: orderinfo.totalPrice,
         currency: "BDT",
         tran_id: transId, // use unique tran_id for each api call
-        success_url: `http://localhost:3000/api/v1/payment/success/${transId}`,
+        success_url: `http://localhost:3000/api/v1/payment/success/${order.id}`,
         fail_url: "http://localhost:3000/api/v1/payment/fail",
         cancel_url: "http://localhost:3000/api/v1/payment/cancel",
         ipn_url: "http://localhost:3000/api/v1/payment/ipn",
@@ -109,14 +118,7 @@ const placeOrder = async (req, res) => {
       );
       const apiRes = await sslcz.init(data);
       let GatewayPageURL = apiRes.GatewayPageURL;
-      const order = new Order({
-        user: _id,
-        cartItem: orderinfo.cart,
-        paymentinfo: paymentinfo,
-        customerinfo: customerInfo,
-        totalPrice: orderinfo.totalPrice,
-      });
-      order.paymentinfo.tran_id = transId;
+
       await order.save();
 
       return res
@@ -162,7 +164,9 @@ const getOrderById = async (req, res) => {
         select:
           "-password -isVerified -otp -otpExpirationTime -createdAt -updatedAt",
       })
-      .populate("cartItem")
+      .populate({
+        path: "cartItem.product",
+      })
       .sort({ createdAt: -1 });
 
     if (!order) {

@@ -226,7 +226,10 @@ const userAuth = async (req, res) => {
   try {
     const user = req.user;
     res.status(200).json(new apiResponse(200, "success", user));
-  } catch (error) {}
+  } catch (error) {
+    console.log("error from user auth controller", error);
+    res.status(500).json(new apiError(500, "server error", null, error));
+  }
 };
 
 const logout = async (req, res) => {

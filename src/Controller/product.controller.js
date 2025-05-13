@@ -124,6 +124,7 @@ const createProduct = async (req, res) => {
 };
 
 const getAllProduct = async (req, res) => {
+  // console.log("got");
   try {
     const cache = cacheData.get("allProducts");
     if (cache == undefined) {

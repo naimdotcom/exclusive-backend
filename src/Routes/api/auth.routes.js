@@ -9,6 +9,10 @@ const {
   logout,
 } = require("../../Controller/auth.controller.js");
 const { verifyAuth } = require("../../middleware/auth.middleware.js");
+const {
+  registerAdmin,
+  verifyAdminOTP,
+} = require("../../Controller/admin/auth.controller.js");
 
 // todo:  health cheacker route
 
@@ -39,5 +43,11 @@ _.route("/verify").get(verifyAuth, userAuth);
 // todo: resend the otp
 
 _.route("/resend-otp").post(resendTheOTP);
+
+// admin routes
+
+_.route("/admin-registration").post(registerAdmin);
+
+_.route("/admin-verify-otp").post(verifyAdminOTP);
 
 module.exports = _;
