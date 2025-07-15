@@ -16,6 +16,7 @@ const {
   verifiedEmailTemplate,
   updateEmailTemplate,
 } = require("../Helpers/emailTemplates");
+const options = require("../utils/TokenOption");
 
 const DbSelect =
   "-password -__v -createdAt -updatedAt -otp -otpExpirationTime -role -isVerified";
@@ -200,7 +201,7 @@ const login = async (req, res) => {
     // todo: send response to user with token
     res
       .status(200)
-      .cookie("token", token)
+      .cookie("exclusiveToken", token, options)
       .json(new apiResponse(200, "success", { user, token }, null));
 
     setImmediate(async () => {
@@ -234,7 +235,8 @@ const userAuth = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    res.clearCookie("token");
+    console.log("logout");
+    res.clearCookie("exclusiveToken");
     res.status(200).json(new apiResponse(200, "Logout successful", null, null));
   } catch (error) {
     res.status(500).json(new apiError(500, "Server error", null, error));

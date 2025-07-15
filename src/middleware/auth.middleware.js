@@ -3,9 +3,8 @@ const jwt = require("jsonwebtoken");
 const verifyAuth = async (req, res, next) => {
   try {
     if (req.headers.cookie) {
-      const tokenRegx = /(?<=token=)[\w-]+\.[\w-]+\.[\w-]+/;
+      const tokenRegx = /(?<=exclusiveToken=)[\w-]+\.[\w-]+\.[\w-]+/;
       const token = req.headers.cookie.match(tokenRegx)[0];
-      console.log(token);
 
       const decoded = jwt.verify(token, process.env.TOKEN_SECRECT);
       if (!decoded) {
